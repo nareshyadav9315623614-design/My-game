@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Jungle Gun Game</title>
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: green;
+}
+
+#player {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: blue;
+}
+
+.enemy {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: red;
+}
+
+.bullet {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: yellow;
+}
+
+#ui {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div id="player"></div>
+
+<div id="ui">
+  <div id="health">Health: 100</div>
+</div>
+
+<script>
+let player = document.getElementById("player");
+
+let x = 200, y = 200;
+let health = 100;
+
+let bullets = [];
+let enemies = [];
+
+function update() {
+  player.style.left = x + "px";
+  player.style.top = y + "px";
+  document.getElementById("health").innerText = "Health: " + health;
+}
+
+// Movement
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp") y -= 20;
+  if (e.key === "ArrowDown") y += 20;
+  if (e.key === "ArrowLeft") x -= 20;
+  if (e.key === "ArrowRight") x += 20;
+
+  // Shoot
+  if (e.key === " ") {
+    shoot();
+  }
+
+  update();
+});
+
+function shoot() {
+  let bullet = document.createElement("div");
+  bullet.classList.add("bullet");
+
+  let bx = x + 25;
+  let by = y + 25;
+
+  bullet.style.left = bx + "px";
+  bullet.style.top = by + "px";
+
+  document.body.appendChild(bullet);
+
+  let speed = 10;
+
+  let interval = setInterval(() => {
+    by -= speed;
+    bullet.style.top = by + "px";
+
+    // Check hit
+    enemies.forEach((enemy, index) => {
+      let ex = parseInt(enemy.style.left);
+      let ey = parseInt(enemy.style.top);
+
+      if (Math.abs(bx - ex) < 40 && Math.abs(by - ey) < 40) {
+        enemy.remove();
+        bullet.remove();
+        enemies.splice(index, 1);
+        clearInterval(interval);
+      }
+    });
+
+    if (by < 0) {
+      bullet.remove();
+      clearInterval(interval);
+    }
+
+  }, 50);
+}
+
+// Enemy spawn
+function createEnemy() {
+  let enemy = document.createElement("div");
+  enemy.classList.add("enemy");
+
+  let ex = Math.random()*window.innerWidth;
+  let ey = Math.random()*window.innerHeight;
+
+  enemy.style.left = ex + "px";
+  enemy.style.top = ey + "px";
+
+  document.body.appendChild(enemy);
+  enemies.push(enemy);
+
+  setInterval(() => {
+    ex += (x - ex) * 0.02;
+    ey += (y - ey) * 0.02;
+
+    enemy.style.left = ex + "px";
+    enemy.style.top = ey + "px";
+
+    if (Math.abs(x - ex) < 40 && Math.abs(y - ey) < 40) {
+      health -= 1;
+      if (health <= 0) {
+        alert("Game Over!");
+        location.reload();
+      }
+      update();
+    }
+  }, 100);
+}
+
+setInterval(createEnemy, 2000);
+
+update();
+</script>
+
+</body>
+  </html>
